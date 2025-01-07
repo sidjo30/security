@@ -7,6 +7,15 @@ app.secret_key = 'supersecretkey'  # Hardcoded secret key (vulnerability)
 
 # Database setup
 def init_db():
+    """Initializes the database with necessary tables.
+    Parameters:
+        None
+    Returns:
+        None
+    Processing Logic:
+        - Connects to an SQLite database named 'vulnerable_app.db'.
+        - Creates 'users' and 'posts' tables if they do not already exist.
+        - Commits the changes and closes the connection."""
     conn = sqlite3.connect('vulnerable_app.db')
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (
@@ -56,6 +65,16 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """Registers a user into the application.
+    Parameters:
+        - None
+    Returns:
+        - Response object: A redirect to the 'login' route if the request method is POST. 
+        - HTML Template: Renders the 'register.html' template for GET requests.
+    Processing Logic:
+        - Hashes the password before storing it in the database.
+        - Inserts user credentials into the 'users' table.
+        - Redirects to the login page after successful registration."""
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -70,6 +89,15 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Authenticate a user and establish a session if credentials are valid.
+    Parameters:
+        - None
+    Returns:
+        - str or object: A redirection to the 'index' page if login is successful, an "Invalid credentials" message if unsuccessful, or the login form if the request method is not POST.
+    Processing Logic:
+        - Verifies user credentials by checking hashed passwords.
+        - Initiates a session with username and user ID upon successful login. 
+        - Returns login form for GET requests."""
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -96,6 +124,16 @@ def view_post(post_id):
 
 @app.route('/create_post', methods=['GET', 'POST'])
 def create_post():
+    """Creates a new post in the application if the user is logged in.
+    Parameters:
+        - None
+    Returns:
+        - redirect: Redirects the user to login page if they are not logged in, or to the index page after creating a post.
+        - render_template: Renders the 'create_post.html' page if the request method is not POST.
+    Processing Logic:
+        - Checks session for 'username' to verify user login.
+        - Establishes a connection to the SQLite database to insert a new post entry.
+        - Uses user session information to create a post associated with the logged-in user."""
     if 'username' not in session:
         return redirect(url_for('login'))
     if request.method == 'POST':
