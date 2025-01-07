@@ -22,6 +22,15 @@ total_hosts = 0
 
 
 def display_banner():
+    """Displays a styled banner indicating information about CVE-2024-6387 Vulnerability Checker.
+    Parameters:
+        - None
+    Returns:
+        - None
+    Processing Logic:
+        - Constructs a multi-line string using raw formatting to include escape sequences.
+        - Inserts dynamic version number within the banner text.
+        - The banner includes decorative ASCII art and author information."""
     banner = rf"""
 {BLUE}
                                       _________ _________ ___ ___ .__
@@ -38,6 +47,17 @@ _______   ____   ___________   ____  /   _____//   _____//   |   \|__| ____   __
 
 
 def get_ssh_sock(ip, port, timeout):
+    """Establish a socket connection to a given IP and port within a specified timeout.
+    Parameters:
+        - ip (str): The target IP address to connect to.
+        - port (int): The target port number to connect to.
+        - timeout (float): The maximum time in seconds to wait for the connection.
+    Returns:
+        - socket.socket or None: A connected socket object if the connection is successful; otherwise, None.
+    Processing Logic:
+        - Uses a TCP/IP socket to initiate the connection.
+        - Sets a connection timeout to avoid indefinite blocking.
+        - Handles exceptions by closing the socket and returning None if the connection fails."""
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(timeout)
     try:
@@ -58,6 +78,19 @@ def get_ssh_banner(sock):
 
 
 def check_vulnerability(ip, port, timeout, result_queue):
+    """Check the SSH server for known vulnerabilities based on its banner and update the result queue accordingly.
+    Parameters:
+        - ip (str): The IP address of the target server.
+        - port (int): The port number where the SSH service is running.
+        - timeout (int): The maximum time in seconds to wait for a connection.
+        - result_queue (Queue): A thread-safe queue for storing the results of the vulnerability check.
+    Returns:
+        - None: This function updates the result_queue with the status and details of the vulnerability check.
+    Processing Logic:
+        - Attempts to establish an SSH connection to the specified IP and port.
+        - Checks if the retrieved SSH banner starts with "SSH-2.0" and "SSH-2.0-OpenSSH".
+        - Compares the banner against known vulnerable and excluded versions to determine status.
+        - Updates a global progress counter in a thread-safe manner."""
     global progress_counter
 
     sshsock = get_ssh_sock(ip, port, timeout)
@@ -124,6 +157,13 @@ def check_vulnerability(ip, port, timeout, result_queue):
 
 
 def process_ip_list(ip_list_file):
+    """Read IP addresses from a file and return them as a list.
+    Parameters:
+        - ip_list_file (str): The path to the file containing IP addresses, one per line.
+    Returns:
+        - list: A list of IP addresses as strings, with whitespace removed from each address.
+    Processing Logic:
+        - Handles IOError and prints an error message if the file cannot be read."""
     ips = []
     try:
         with open(ip_list_file, 'r') as file:
@@ -134,6 +174,19 @@ def process_ip_list(ip_list_file):
 
 
 def main():
+    """Checks if servers are running a vulnerable version of OpenSSH (CVE-2024-6387).
+    Parameters:
+        - targets (list): IP addresses, domain names, file paths containing IP addresses, or CIDR network ranges.
+        - port (int): Port number to check (default: 22).
+        - timeout (float): Connection timeout in seconds (default: 1 second).
+        - list (str): File containing a list of IP addresses to check.
+    Returns:
+        - None: Prints the results of the scan, including vulnerable and non-vulnerable servers.
+    Processing Logic:
+        - Parses input arguments and supports multiple types of target specifications.
+        - Utilizes a thread pool executor to concurrently check for vulnerabilities.
+        - Displays a progress update while scanning is in progress.
+        - Processes scan results and categorizes servers based on their vulnerability status."""
     global total_hosts
     display_banner()
 
