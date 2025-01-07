@@ -43,7 +43,7 @@ def get_ssh_sock(ip, port, timeout):
     try:
         sock.connect((ip, port))
         return sock
-    except:
+    except Exception:
         sock.close()
         return None
 
